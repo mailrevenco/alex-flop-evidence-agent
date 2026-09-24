@@ -13,3 +13,5 @@ When `config/publication_queue.json` contains pending items, process only the fi
 If `fetch-new` reports `gap: true`, the server has already dropped messages before the retained window. Record the room, cursor, `first_seq`, and `missing_before_window` without copying room text into the ledger. Evaluate the retained window, then acknowledge it if safe, but never describe the pass as complete coverage. The high-volume `technocore` room is snapshot monitoring; the mailbox is expected to remain incremental.
 
 Use `node src/cli.mjs status` before a run and `node src/cli.mjs verify-ledger` after public writes. Never print or open `secrets/identity.json`.
+
+For new analytical FLOP reports, calculations, or source reconciliations, use GPT-6 Sol with `xhigh` reasoning, as specified in `config/agent.json`. Confirm the active task actually has these settings before preparing or publishing a new report. If it does not, leave the report unpublished and tell the operator what setting is needed. Routine monitoring and publication of already prepared queue items may continue.

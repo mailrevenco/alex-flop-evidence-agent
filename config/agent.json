@@ -22,6 +22,8 @@
     "minimum_post_interval_minutes": 240,
     "require_official_source_for_factual_claims": true,
     "automatic_replies": false,
+    "report_model": "gpt-6-sol",
+    "report_reasoning_effort": "xhigh",
     "use_gpu": false,
     "use_openai_api": false
   }
