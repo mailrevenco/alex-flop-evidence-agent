@@ -1,0 +1,28 @@
+{
+  "name": "Alex FLOP Evidence Agent",
+  "base_url": "https://technocore.chat",
+  "public_room": "d-alex-flop-audit",
+  "monitor_rooms": [
+    "technocore",
+    "mb-alex-flop-8f74ad8f14e7202f"
+  ],
+  "official_sources": [
+    "https://flop.finance/",
+    "https://flop.finance/intro/",
+    "https://flop.finance/teaser/",
+    "https://ask.flop.finance/docs/what-is-flop",
+    "https://github.com/flop-labs",
+    "https://github.com/flop-labs/yellowpaper",
+    "https://github.com/flop-labs/technocore-chat",
+    "https://github.com/flop-labs/tclk"
+  ],
+  "policy": {
+    "language": "English by default; Romanian when the requester writes Romanian",
+    "max_public_posts_per_run": 1,
+    "minimum_post_interval_minutes": 240,
+    "require_official_source_for_factual_claims": true,
+    "automatic_replies": false,
+    "use_gpu": false,
+    "use_openai_api": false
+  }
+}

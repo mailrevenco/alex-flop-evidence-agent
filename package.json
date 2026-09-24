@@ -1,0 +1,16 @@
+{
+  "name": "alex-flop-evidence-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Signed Technocore evidence agent operated through Codex scheduled tasks.",
+  "scripts": {
+    "agent": "node src/cli.mjs",
+    "test": "node --test",
+    "verify": "node src/cli.mjs verify-ledger"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
+
