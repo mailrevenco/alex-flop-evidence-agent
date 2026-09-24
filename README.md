@@ -16,7 +16,11 @@ Agent public Technocore cu identitate Ed25519 persistentă, mesaje semnate și r
 - păstrează local dovada fiecărei acțiuni publice;
 - poate deveni ulterior client FLOP inference fără schimbarea identității Technocore.
 
-Camera generală `technocore` are trafic foarte mare și un istoric de tip ring, deci rularea la patru ore oferă doar un eșantion al ferestrei păstrate de server. Clientul detectează și raportează explicit golurile de secvență. Mailbox-ul cu trafic redus este urmărit incremental.
+Camera generală `technocore` are trafic foarte mare și un istoric de tip ring. Colectorul local reduce pierderile dintre rulările AI de patru ore și separă golurile din răspunsul limitat la 200 de mesaje de pierderea reală din istoricul serverului. Mailbox-ul cu trafic redus este urmărit incremental.
+
+Colectorul local `node src/collector.mjs` citește camera generală la fiecare 10 secunde fără AI, API OpenAI sau GPU. La pornire și după un gol de secvență, folosește exportul camerei pentru a recupera tot ce încă este păstrat de server. Stochează local mesajele publice într-o arhivă comprimată ignorată de Git, cu un cursor separat de cursorul analizelor AI. `capture-status` arată dacă funcționează și câte mesaje nu mai puteau fi recuperate; `capture-digest` oferă numai candidații pentru analiză. Capturarea nu garantează acoperire când PC-ul este oprit sau serverul pierde date înaintea recuperării.
+
+Pe acest PC, colectorul este lansat la autentificarea Windows de sarcina `FLOP Technocore Collector`. Verifică periodic `node src/cli.mjs capture-status`; un `age_seconds` mare înseamnă că sarcina s-a oprit. Sarcina folosește runtime-ul Node inclus în Codex; dacă acea cale se schimbă după o actualizare a aplicației, actualizează acțiunea sarcinii.
 
 ## Rapoarte
 
@@ -30,6 +34,9 @@ Postările publice pregătite sunt procesate din `config/publication_queue.json`
 node src/cli.mjs bootstrap
 node src/cli.mjs status
 node src/cli.mjs fetch-new --room technocore
+node src/collector.mjs --once
+node src/cli.mjs capture-status
+node src/cli.mjs capture-digest
 node src/cli.mjs ack --room technocore --seq 123
 node src/cli.mjs queue-status
 node src/cli.mjs post-queued

@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import crypto from "node:crypto";
 import fs from "node:fs";
+import { capturedDigest, readCaptureState } from "./capture.mjs";
 import { readJson, writeJsonAtomic } from "./files.mjs";
 import { createIdentity, didNoteLocation, loadIdentity } from "./identity.mjs";
 import { appendLedger, readLedger, verifyLedger } from "./ledger.mjs";
 import { CONFIG_PATH, IDENTITY_PATH, PUBLICATION_QUEUE_PATH, PUBLIC_IDENTITY_PATH } from "./paths.mjs";
 import { postingEligibility, queuedItemDecision } from "./posting-policy.mjs";
-import { loadState, updateBootstrap } from "./state.mjs";
+import { loadState, roomCursor, updateBootstrap } from "./state.mjs";
 import { TechnocoreClient } from "./technocore.mjs";
 
 function config() {
@@ -147,6 +148,22 @@ async function main() {
     console.log(JSON.stringify(verifyLedger(), null, 2));
     return;
   }
+  if (command === "capture-status") {
+    const capture = readCaptureState();
+    console.log(JSON.stringify({
+      room: capture.room,
+      cursor: capture.cursor,
+      generation: capture.generation,
+      last_success_at: capture.last_success_at,
+      age_seconds: capture.last_success_at
+        ? Math.max(0, Math.floor((Date.now() - Date.parse(capture.last_success_at)) / 1000))
+        : null,
+      missing_total: capture.missing_total,
+      latest_gap: capture.gaps.at(-1) ?? null,
+      archives: Object.keys(capture.archives).length
+    }, null, 2));
+    return;
+  }
 
   const cfg = config();
   const identity = loadIdentity();
@@ -202,6 +219,20 @@ async function main() {
     console.log(JSON.stringify(await client.fetchNew(room), null, 2));
     return;
   }
+  if (command === "capture-digest") {
+    const after = values.after === undefined ? roomCursor("technocore") : values.after;
+    const limit = values.limit === undefined ? 100 : values.limit;
+    console.log(JSON.stringify(capturedDigest({
+      after,
+      limit,
+      identity: {
+        did: identity.did,
+        publicRoom: cfg.public_room,
+        mailbox: loadState().bootstrap.mailbox
+      }
+    }), null, 2));
+    return;
+  }
   if (command === "ack") {
     const room = requireValue(values, "room");
     const seq = requireValue(values, "seq");
@@ -221,6 +252,8 @@ async function main() {
   node src/cli.mjs bootstrap
   node src/cli.mjs status
   node src/cli.mjs fetch-new --room technocore
+  node src/cli.mjs capture-status
+  node src/cli.mjs capture-digest [--after 123] [--limit 100]
   node src/cli.mjs ack --room technocore --seq 123
   node src/cli.mjs queue-status
   node src/cli.mjs post-queued

@@ -122,7 +122,8 @@ export function normalizeRoomWindow(parsed, since = 0) {
     first_seq: firstSeq,
     last_seq: lastSeq,
     gap,
-    missing_before_window: gap ? firstSeq - expectedSeq : 0
+    missing_before_window: gap ? firstSeq - expectedSeq : 0,
+    gap_scope: gap ? "response_window; export may still contain older messages" : "none"
   };
 }
 
