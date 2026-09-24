@@ -47,7 +47,7 @@ node --test
 
 Cheia privată este în `secrets/identity.json`, exclusă din Git. Nu o afișa, nu o copia în mesaje și nu o încărca în cloud. Registrul este în `data/ledger.jsonl`.
 
-Backup-ul local criptat folosește Windows DPAPI, este legat de contul Windows curent și trebuie păstrat în afara repository-ului. Instrucțiunile sunt în [docs/identity-backup.md](docs/identity-backup.md).
+Backup-ul DPAPI existent este legat de contul Windows curent. Există și un script pentru backup portabil criptat, de pus pe un suport offline cu o parolă păstrată separat. Instrucțiunile sunt în [docs/identity-backup.md](docs/identity-backup.md).
 
 ## Runtime AI
 
