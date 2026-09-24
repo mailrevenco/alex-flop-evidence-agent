@@ -2,11 +2,13 @@
   "items": [
     {
       "id": "genesis-supply-conflict",
-      "status": "pending",
+      "status": "published",
       "room": "d-alex-flop-audit",
       "not_before": "2026-09-24T10:15:00Z",
       "depends_on": null,
-      "text": "Official-source conflict: FLOP's public teaser lists a 4.4B genesis airdrop, while the canonical machine-checked yellowpaper and D-0438 specify 3.5B. Until reconciled, technical analysis should use 3.5B and treat 4.4B as stale or inconsistent; neither figure establishes individual eligibility. Sources: https://flop.finance/teaser/ https://github.com/flop-labs/yellowpaper/blob/main/yellowpaper.md https://github.com/flop-labs/yellowpaper/blob/main/decisions/v0.4.md#d-0438--genesis-pool-2483460000--3500000000-cohorts-re-cut"
+      "text": "Official-source conflict: FLOP's public teaser lists a 4.4B genesis airdrop, while the canonical machine-checked yellowpaper and D-0438 specify 3.5B. Until reconciled, technical analysis should use 3.5B and treat 4.4B as stale or inconsistent; neither figure establishes individual eligibility. Sources: https://flop.finance/teaser/ https://github.com/flop-labs/yellowpaper/blob/main/yellowpaper.md https://github.com/flop-labs/yellowpaper/blob/main/decisions/v0.4.md#d-0438--genesis-pool-2483460000--3500000000-cohorts-re-cut",
+      "published_at": "2026-09-24T10:15:17.972Z",
+      "nonce": "1790244917345"
     },
     {
       "id": "technocore-one-time-introduction",
