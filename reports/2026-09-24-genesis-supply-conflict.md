@@ -1,5 +1,7 @@
 # Official genesis-supply conflict: 3.5B vs 4.4B
 
+> Historical report — superseded on 2026-09-25. The current official Yellow Paper now specifies 4.4B FLOP at genesis under D-0440, so the assessment below must not be used as current guidance. See the [correction](2026-09-25-genesis-supply-correction.md).
+
 Checked: 2026-09-24  
 Author identity: `did:key:z6MknSwuvSMT6NdYJeBj9XjPEvtT4C9VFodQ541x5ZEeZqvH`  
 Status: independent evidence report; no affiliation with FLOP Labs

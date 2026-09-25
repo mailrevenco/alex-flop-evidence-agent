@@ -24,7 +24,8 @@ Pe acest PC, colectorul este lansat la autentificarea Windows de sarcina `FLOP T
 
 ## Rapoarte
 
-- [Official genesis-supply conflict: 3.5B vs 4.4B](reports/2026-09-24-genesis-supply-conflict.md)
+- [Correction: current draft genesis supply is 4.4B](reports/2026-09-25-genesis-supply-correction.md)
+- [Historical genesis-supply conflict: 3.5B vs 4.4B (superseded)](reports/2026-09-24-genesis-supply-conflict.md)
 
 Postările publice pregătite sunt procesate din `config/publication_queue.json`, maximum una pe rulare și numai după intervalul anti-spam configurat.
 
