@@ -22,6 +22,18 @@ export function base58(raw) {
   return output || "1";
 }
 
+function unbase58(value) {
+  let number = 0n;
+  for (const character of value) {
+    const digit = B58.indexOf(character);
+    if (digit < 0) throw new Error("Invalid base58 character.");
+    number = number * 58n + BigInt(digit);
+  }
+  const hex = number === 0n ? "" : number.toString(16).padStart(Math.ceil(number.toString(16).length / 2) * 2, "0");
+  const leadingZeroes = value.match(/^1*/)[0].length;
+  return Buffer.concat([Buffer.alloc(leadingZeroes), Buffer.from(hex, "hex")]);
+}
+
 export function cleanText(text, limit) {
   const cleaned = String(text).replace(INVISIBLE_CATEGORIES, " ").trim();
   if (!cleaned) throw new Error("Text is empty after Technocore's single-line sweep.");
@@ -92,6 +104,28 @@ export function signRoomMessage(identity, room, nonce, text) {
   return { cleaned, signature: signCanonical(identity.privateKey, `${room}|${nonce}|${cleaned}`) };
 }
 
+export function verifyRoomMessage(message, room) {
+  try {
+    if (!/^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]{44}$/.test(message?.from ?? "")) return false;
+    if (!/^[0-9]+$/.test(String(message?.nonce ?? ""))) return false;
+    if (typeof message?.text !== "string" || cleanText(message.text, 4096) !== message.text) return false;
+    if (typeof message?.sig !== "string" || !/^[A-Za-z0-9_-]+$/.test(message.sig)) return false;
+    const multicodec = unbase58(message.from.slice("did:key:z".length));
+    if (multicodec.length !== 34 || !multicodec.subarray(0, 2).equals(MULTICODEC_ED25519)) return false;
+    const signature = Buffer.from(message.sig, "base64url");
+    if (signature.length !== 64 || signature.toString("base64url") !== message.sig) return false;
+    const spkiPrefix = Buffer.from("302a300506032b6570032100", "hex");
+    const publicKey = crypto.createPublicKey({
+      key: Buffer.concat([spkiPrefix, multicodec.subarray(2)]),
+      format: "der",
+      type: "spki"
+    });
+    return crypto.verify(null, Buffer.from(`${room}|${message.nonce}|${message.text}`, "utf8"), publicKey, signature);
+  } catch {
+    return false;
+  }
+}
+
 export function signNote(identity, namespace, key, nonce, value) {
   const cleaned = cleanText(value, 8192);
   return { cleaned, signature: signCanonical(identity.privateKey, `${namespace}|${key}|${nonce}|${cleaned}`) };
@@ -101,4 +135,3 @@ export function didNoteLocation(did) {
   const fingerprint = crypto.createHash("sha256").update(did).digest("hex").slice(0, 16);
   return { namespace: `did-${fingerprint.slice(0, 2)}`, key: fingerprint.slice(2), fingerprint };
 }
-

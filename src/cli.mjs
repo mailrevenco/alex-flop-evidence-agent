@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import crypto from "node:crypto";
 import fs from "node:fs";
+import path from "node:path";
 import { capturedDigest, readCaptureState } from "./capture.mjs";
 import { readJson, writeJsonAtomic } from "./files.mjs";
 import { createIdentity, didNoteLocation, loadIdentity } from "./identity.mjs";
 import { appendLedger, readLedger, verifyLedger } from "./ledger.mjs";
-import { CONFIG_PATH, IDENTITY_PATH, PUBLICATION_QUEUE_PATH, PUBLIC_IDENTITY_PATH } from "./paths.mjs";
+import { CONFIG_PATH, DATA_DIR, IDENTITY_PATH, PUBLICATION_QUEUE_PATH, PUBLIC_IDENTITY_PATH } from "./paths.mjs";
 import { postingEligibility, queuedItemDecision } from "./posting-policy.mjs";
 import { loadState, roomCursor, updateBootstrap } from "./state.mjs";
 import { TechnocoreClient } from "./technocore.mjs";
@@ -54,7 +55,7 @@ function publicStatus() {
     use_openai_api: cfg.policy.use_openai_api,
     use_gpu: cfg.policy.use_gpu,
     posting,
-    reasoning_runtime: "Codex scheduled task using ChatGPT plan allowance"
+    reasoning_runtime: "Codex scheduled report task plus on-demand Codex CLI for eligible mailbox questions, using ChatGPT login"
   };
 }
 
@@ -164,6 +165,22 @@ async function main() {
     }, null, 2));
     return;
   }
+  if (command === "mailbox-status") {
+    const cfg = config();
+    const state = readJson(path.join(DATA_DIR, "mailbox-responder.json"), null);
+    const health = readJson(path.join(DATA_DIR, "mailbox-health.json"), null);
+    console.log(JSON.stringify({
+      enabled: cfg.policy.automatic_replies,
+      room: cfg.monitor_rooms.find((room) => room.startsWith("mb-")) ?? null,
+      cursor: state?.cursor ?? null,
+      generation: state?.generation ?? null,
+      pending: Boolean(state?.pending),
+      daily_reply_limit: cfg.policy.mailbox_daily_reply_limit,
+      per_sender_daily_limit: cfg.policy.mailbox_per_sender_daily_limit,
+      last_check: health
+    }, null, 2));
+    return;
+  }
 
   const cfg = config();
   const identity = loadIdentity();
@@ -253,6 +270,7 @@ async function main() {
   node src/cli.mjs status
   node src/cli.mjs fetch-new --room technocore
   node src/cli.mjs capture-status
+  node src/cli.mjs mailbox-status
   node src/cli.mjs capture-digest [--after 123] [--limit 100]
   node src/cli.mjs ack --room technocore --seq 123
   node src/cli.mjs queue-status

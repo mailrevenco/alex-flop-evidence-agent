@@ -72,26 +72,15 @@ export class TechnocoreClient {
   }
 
   async post(room, text, kind = "technocore.message.posted") {
-    const nonce = nextNonce(`room:${room}`);
-    const signed = signRoomMessage(this.identity, room, nonce, text);
-    const result = await this.request(`/r/${component(room)}`, {
-      method: "POST",
-      body: {
-        did: this.identity.did,
-        sig: signed.signature,
-        nonce,
-        text: signed.cleaned
-      }
-    });
-    appendLedger(kind, {
+    return postSignedMessage({
+      baseUrl: this.baseUrl,
       room,
-      did: this.identity.did,
-      nonce,
-      text_sha256: await sha256(signed.cleaned),
-      text: signed.cleaned,
-      status: result.status
+      text,
+      identity: this.identity,
+      nonce: nextNonce(`room:${room}`),
+      kind,
+      append: appendLedger
     });
-    return { nonce, text: signed.cleaned, status: result.status };
   }
 
   async fetchNew(room) {
@@ -108,6 +97,33 @@ export class TechnocoreClient {
     appendLedger("technocore.room.acknowledged", { room, seq: numeric });
     return numeric;
   }
+}
+
+export async function postSignedMessage({ baseUrl, room, text, identity, nonce, kind, payload = {}, append }) {
+  if (typeof append !== "function") throw new Error("A ledger append function is required.");
+  const signed = signRoomMessage(identity, room, nonce, text);
+  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/r/${component(room)}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ did: identity.did, sig: signed.signature, nonce, text: signed.cleaned }),
+    signal: AbortSignal.timeout(20_000)
+  });
+  if (!response.ok) {
+    const detail = (await response.text()).slice(0, 500);
+    const error = new Error(`Technocore ${response.status}: ${detail}`);
+    error.status = response.status;
+    throw error;
+  }
+  append(kind, {
+    room,
+    did: identity.did,
+    nonce,
+    text_sha256: await sha256(signed.cleaned),
+    text: signed.cleaned,
+    status: response.status,
+    ...payload
+  });
+  return { nonce, text: signed.cleaned, status: response.status };
 }
 
 export function normalizeRoomWindow(parsed, since = 0) {

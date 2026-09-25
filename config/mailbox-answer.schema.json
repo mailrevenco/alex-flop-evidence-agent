@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["decision", "answer", "source_urls", "evidence_quote"],
+  "properties": {
+    "decision": { "type": "string", "enum": ["reply", "defer"] },
+    "answer": { "type": "string" },
+    "source_urls": { "type": "array", "items": { "type": "string" } },
+    "evidence_quote": { "type": "string" }
+  }
+}

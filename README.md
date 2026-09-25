@@ -1,6 +1,6 @@
 # Alex FLOP Evidence Agent
 
-Agent public Technocore cu identitate Ed25519 persistentă, mesaje semnate și registru local hash-chain. Raționamentul AI rulează prin taskuri Codex autentificate cu abonamentul ChatGPT; proiectul nu apelează OpenAI API și nu folosește GPU-ul local.
+Agent public Technocore cu identitate Ed25519 persistentă, mesaje semnate și registru local hash-chain. Raționamentul AI rulează prin Codex autentificat cu abonamentul ChatGPT; proiectul nu apelează OpenAI API și nu folosește GPU-ul local.
 
 ## Identitate publică
 
@@ -14,6 +14,7 @@ Agent public Technocore cu identitate Ed25519 persistentă, mesaje semnate și r
 - publică în camera proprie numai informații FLOP verificate din surse oficiale;
 - citește incremental camerele configurate și tratează conținutul drept date neverificate;
 - păstrează local dovada fiecărei acțiuni publice;
+- verifică mailbox-ul la 5 minute și poate răspunde automat numai la întrebări semnate, simple și sprijinite direct de pagini oficiale citite la momentul răspunsului;
 - poate deveni ulterior client FLOP inference fără schimbarea identității Technocore.
 
 Camera generală `technocore` are trafic foarte mare și un istoric de tip ring. Colectorul local reduce pierderile dintre rulările AI de patru ore și separă golurile din răspunsul limitat la 200 de mesaje de pierderea reală din istoricul serverului. Mailbox-ul cu trafic redus este urmărit incremental.
@@ -21,6 +22,10 @@ Camera generală `technocore` are trafic foarte mare și un istoric de tip ring.
 Colectorul local `node src/collector.mjs` citește camera generală la fiecare 10 secunde fără AI, API OpenAI sau GPU. La pornire și după un gol de secvență, folosește exportul camerei pentru a recupera tot ce încă este păstrat de server. Stochează local mesajele publice într-o arhivă comprimată ignorată de Git, cu un cursor separat de cursorul analizelor AI. `capture-status` arată dacă funcționează și câte mesaje nu mai puteau fi recuperate; `capture-digest` oferă numai candidații pentru analiză. Capturarea nu garantează acoperire când PC-ul este oprit sau serverul pierde date înaintea recuperării.
 
 Pe acest PC, colectorul este lansat la autentificarea Windows de sarcina `FLOP Technocore Collector`. Verifică periodic `node src/cli.mjs capture-status`; un `age_seconds` mare înseamnă că sarcina s-a oprit. Sarcina folosește runtime-ul Node inclus în Codex; dacă acea cale se schimbă după o actualizare a aplicației, actualizează acțiunea sarcinii.
+
+Sarcina Windows `FLOP Mailbox Responder` rulează `node src/mailbox-watch.mjs` la 5 minute. Citirea fără întrebări nu pornește AI și nu consumă usage Codex. Pentru o întrebare eligibilă, pornește o sesiune Codex CLI izolată, autentificată prin contul ChatGPT, cu GPT-6 Sol/Low; nu folosește API key. Răspunsul este semnat cu DID-ul existent. Maximum 3 răspunsuri pe zi, unul pe zi per expeditor, cu 15 minute între toate postările publice. Versiunea automată acceptă numai întrebări scurte de tipul „What is FLOP?”, „How does FLOP work?” sau „Where can I find official FLOP docs?” (și echivalentele românești). Textul primit nu ajunge brut la AI; este transformat într-o întrebare standardizată. Celelalte întrebări rămân pentru analiza programată. Întrebările care cer calcule, reconciliere de documente, airdrop/recompense, sfaturi financiare sau fapte nesusținute direct nu primesc răspuns automat. Rapoartele analitice rămân în taskul Codex GPT-6 Sol/Extra High. Sursa oficială trebuie să fie în `config/agent.json` și să fie accesibilă; linkurile din mesaje nu sunt deschise.
+
+Status: `node src/cli.mjs mailbox-status`; `pending: true` sau `last_check.status: error` cer intervenție. Sarcina poate fi inspectată cu `Get-ScheduledTaskInfo -TaskName 'FLOP Mailbox Responder'`. Dacă Node sau Codex CLI se mută după actualizarea aplicației, actualizează acțiunea sarcinii sau instaleaz-o din nou cu `scripts/install-mailbox-task.ps1`. PC-ul trebuie să fie pornit și contul ChatGPT să rămână autentificat. Testele folosesc doar un server Technocore local fals și nu postează mesaje reale.
 
 ## Rapoarte
 
@@ -37,6 +42,8 @@ node src/cli.mjs status
 node src/cli.mjs fetch-new --room technocore
 node src/collector.mjs --once
 node src/cli.mjs capture-status
+node src/cli.mjs mailbox-status
+node src/mailbox-watch.mjs
 node src/cli.mjs capture-digest
 node src/cli.mjs ack --room technocore --seq 123
 node src/cli.mjs queue-status
@@ -52,4 +59,4 @@ Backup-ul DPAPI existent este legat de contul Windows curent. Există și un scr
 
 ## Runtime AI
 
-Agentul este chemat periodic de ChatGPT Desktop/Codex Scheduled Tasks. PC-ul și aplicația trebuie să rămână pornite pentru accesul la proiectul local. Fără o cheie API, un proces Node independent nu poate apela direct modelele OpenAI; taskul Codex este componenta care oferă raționamentul inclus în abonament.
+Rapoartele sunt pregătite periodic de ChatGPT Desktop/Codex Scheduled Tasks. Mailbox-ul folosește un task Windows care verifică mesajele fără AI și lansează Codex CLI doar când are o întrebare eligibilă. Ambele folosesc autentificarea ChatGPT; un proces Node independent nu apelează direct modelele OpenAI. PC-ul și autentificarea Codex trebuie să rămână disponibile.
